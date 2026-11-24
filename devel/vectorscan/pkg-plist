@@ -3,8 +3,8 @@ include/hs/hs_common.h
 include/hs/hs_compile.h
 include/hs/hs_runtime.h
 include/hs/hs_version.h
-lib/libhs.a
-lib/libhs_runtime.a
+%%STATIC%%lib/libhs.a
+%%STATIC%%lib/libhs_runtime.a
 libdata/pkgconfig/libhs.pc
 %%SHARED%%lib/libhs.so.%%SOVERSION%%
 %%SHARED%%lib/libhs.so.%%SOSHORTVERSION%%
