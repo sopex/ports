@@ -1,0 +1,12 @@
+--- util/CMakeLists.txt.orig	2026-11-11 06:41:16 UTC
++++ util/CMakeLists.txt
+@@ -47,3 +47,9 @@ set(crosscompileutil_SRCS
+     cross_compile.h
+     )
+ add_library(crosscompileutil STATIC ${crosscompileutil_SRCS})
++
++if (SIMDE_FAT_FLAGS)
++    target_compile_options(expressionutil PRIVATE ${SIMDE_FAT_FLAGS})
++    target_compile_options(corpusomatic PRIVATE ${SIMDE_FAT_FLAGS})
++    target_compile_options(crosscompileutil PRIVATE ${SIMDE_FAT_FLAGS})
++endif()

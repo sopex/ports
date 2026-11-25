@@ -1,0 +1,13 @@
+--- unit/CMakeLists.txt.orig	2026-11-11 06:41:16 UTC
++++ unit/CMakeLists.txt
+@@ -67,6 +67,10 @@
+     )
+ add_executable(unit-hyperscan ${unit_hyperscan_SOURCES})
+ target_link_libraries(unit-hyperscan hs expressionutil)
++if (SIMDE_FLAGS)
++    set_source_files_properties(hyperscan/serialize.cpp PROPERTIES
++        COMPILE_FLAGS "${SIMDE_FLAGS}")
++endif()
+ 
+ if (NOT FAT_RUNTIME AND BUILD_STATIC_LIBS)
+ set(BUILD_UNIT_INTERNAL TRUE)

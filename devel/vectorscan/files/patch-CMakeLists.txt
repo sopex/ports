@@ -12,7 +12,15 @@
  
  message(STATUS "ARCH_C_FLAGS   : ${ARCH_C_FLAGS}")
  message(STATUS "ARCH_CXX_FLAGS : ${ARCH_CXX_FLAGS}")
-@@ -990,7 +985,7 @@ else ()
+@@ -986,11 +981,15 @@ else ()
+         set_source_files_properties(src/dispatcher.c PROPERTIES
+             COMPILE_FLAGS "-Wno-unused-parameter -Wno-unused-function ${DISPATCHER_DEFINE}")
+ 
++        if (SIMDE_FLAGS)
++            separate_arguments(SIMDE_FAT_FLAGS NATIVE_COMMAND "${SIMDE_FLAGS}")
++        endif()
++
+         if (BUILD_STATIC_LIBS)
  
  	    if (NOT NO_SIMDE_IN_FAT)
                  message(STATUS "Building SIMDE backend in static fat runtime..")
@@ -21,7 +29,42 @@
                  add_fat_component("simde" "hs_exec_simde" "${SIMDE_FLAGS} -march=x86-64 -msse2" "${hs_exec_SRCS}" FALSE)
                  list(APPEND RUNTIME_LIBS $<TARGET_OBJECTS:hs_exec_simde>)
              endif()
-@@ -1040,7 +1035,7 @@ else ()
+@@ -1013,6 +1012,9 @@ else ()
+             endif (BUILD_AVX512VBMI)
+ 
+             add_library(hs_exec_common OBJECT ${hs_exec_common_SRCS} src/dispatcher.c)
++            if (SIMDE_FAT_FLAGS)
++                target_compile_options(hs_exec_common PRIVATE ${SIMDE_FAT_FLAGS})
++            endif()
+ 
+             # hs_version.c is added explicitly to avoid some build systems that refuse to
+             # create a lib without any src (I'm looking at you Xcode)
+@@ -1022,13 +1024,16 @@ else ()
+                 ${RUNTIME_LIBS})
+             set_target_properties(hs_runtime PROPERTIES LINKER_LANGUAGE C)
+             add_library(hs_compile OBJECT ${hs_compile_SRCS})
++            if (SIMDE_FAT_FLAGS)
++                target_compile_options(hs_compile PRIVATE ${SIMDE_FAT_FLAGS})
++            endif()
+ 
+             # we want the static lib for testing
+             add_library(hs STATIC src/hs_version.c src/hs_valid_platform.c
+                 $<TARGET_OBJECTS:hs_compile>
+                 $<TARGET_OBJECTS:hs_exec_common>
+                 ${RUNTIME_LIBS})
+-            set_source_files_properties(src/hs_valid_platform.c PROPERTIES
++            set_source_files_properties(src/hs_valid_platform.c src/hs_version.c PROPERTIES
+                 COMPILE_FLAGS "${SIMDE_FLAGS}")
+ 
+         endif (BUILD_STATIC_LIBS)
+@@ -1036,11 +1041,14 @@ else ()
+         if (BUILD_SHARED_LIBS)
+             # build shared libs
+             add_library(hs_compile_shared OBJECT ${hs_compile_SRCS})
++            if (SIMDE_FAT_FLAGS)
++                target_compile_options(hs_compile_shared PRIVATE ${SIMDE_FAT_FLAGS})
++            endif()
+             set_target_properties(hs_compile_shared PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
  
              if (NOT NO_SIMDE_IN_FAT)
                  message(STATUS "Building SIMDE backend in shared fat runtime..")
@@ -30,3 +73,18 @@
                  add_fat_component("simde" "hs_exec_shared_simde" "${SIMDE_FLAGS} -march=x86-64 -msse2" "${hs_exec_SRCS}" TRUE)
  		list(APPEND RUNTIME_SHLIBS $<TARGET_OBJECTS:hs_exec_shared_simde>)
              endif()
+@@ -1063,10 +1071,13 @@ else ()
+             endif (BUILD_AVX512VBMI)
+ 
+             add_library(hs_exec_common_shared OBJECT ${hs_exec_common_SRCS} src/dispatcher.c)
++            if (SIMDE_FAT_FLAGS)
++                target_compile_options(hs_exec_common_shared PRIVATE ${SIMDE_FAT_FLAGS})
++            endif()
+             set_target_properties(hs_exec_common_shared PROPERTIES
+                 OUTPUT_NAME hs_exec_common
+                 POSITION_INDEPENDENT_CODE TRUE)
+-            set_source_files_properties(src/hs_valid_platform.c PROPERTIES
++            set_source_files_properties(src/hs_valid_platform.c src/hs_version.c PROPERTIES
+                 COMPILE_FLAGS "${SIMDE_FLAGS}")
+         endif() # SHARED
+     endif (ARCH_IA32 OR ARCH_X86_64)
